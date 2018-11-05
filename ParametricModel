@@ -1,0 +1,22 @@
+library(flexsurv)
+model <- c("exp", "weibull", "gompertz", "gengamma", "llogis", "lnorm")
+kmdataIPD <- read.xlsx(paste(path, "KMdataIPD.xlsx", sep = ""), sheet = 1)
+
+require(RColorBrewer)
+mycolors <- brewer.pal(length(model), "Set1")
+# progress-free survival
+plot(KM.est, conf.int = F, ylim=c(0, 1), yaxt = "n",
+     xlab = "Months", ylab = "Progress-free Survival (%)",
+     main = "Alternaltive Parametric Models",
+     cex.lab = 1.5, cex.main = 1.5, cex = 2)  # 不显示纵坐标刻度标签
+axis(2, at = c(0.0, 0.2, 0.4, 0.6, 0.8, 1.0), labels = c(0, 20, 40, 60, 80, 100)) 
+for (i in 1:length(model)) {
+  lines(flexsurvreg(Surv(kmdataIPD$V1, kmdataIPD$V2) ~ 1, dist = model[i]), 
+        ci = F, col = mycolors[i], lty = i+1)
+}
+legend("bottomleft", legend = c("Kaplan-Meier", "exp", "weibull", "gompertz", "gengamma", "llogis", "lnorm"),
+       col = c("black", mycolors), lty = c(1:7))
+# view AIC values
+for (i in 1:length(model)) {
+  print(flexsurvreg(Surv(kmdataIPD$V1, kmdataIPD$V2) ~ 1, dist = model[i]))
+}
